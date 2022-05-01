@@ -1,3 +1,6 @@
+
+
+
 # The 2.0 version of this app is now fully alive and developed with <3
 
 This is the repo of the 2.0 version of my to-do list app. The app was taken down from PythonAnywhere servers and I developed it locally. In the previous version, the app was
@@ -6,6 +9,9 @@ re-developed. It is now a not-so-simple app with some decently awesome features 
 patched.
 
 ![A demo image of the ToDo App Home Page](/project_images/app_glance.png)
+
+## Author
+Lucy Kinyanjui.
 
 ## Awesome features of the app
 
@@ -55,6 +61,7 @@ On the front end, the app uses these technologies
 Production dependencies used on PythonAnywhere
 
 * [python-dotenv](https://github.com/theskumar/python-dotenv)
+
 
 ******************************************************************************************************************************
 
