@@ -1,0 +1,310 @@
+{% extends "ToDo/base.html" %}
+
+{% block content %}
+
+<style>
+    .stay-tuned {
+        font-family: Georgia, 'Times New Roman', Times, serif;
+    }
+
+    {% if request.user_agent.is_mobile %}
+
+        .important-num-major {
+            font-size: 10ch;
+            color: darkcyan
+        }
+
+    {% else %}
+
+        .important-num-major {
+            font-size: 15ch;
+            color: darkcyan
+        }
+
+    {% endif %}
+
+    .important-num-minor {
+        font-size: 7ch;
+        color: magenta;
+    }
+
+    .full-content {
+        width: 100%;
+    }
+</style>
+
+<script src="../../../static/ToDo/js/index.js"></script>
+
+{% if ready == "AI is still learning" %}
+<div class="content-section stay-tuned dark-mode-assist-section">
+    <h1>
+        The AI is still learning your behavior. Please continue creating and completing tasks.
+        Since you are a new member, please allow 7 days for the system to analyze you. After 7 days
+        from the day you joined, visit this page again.
+    </h1>
+
+    <br><br>
+    <a class="btn btn-outline-primary" data-toggle="collapse" href="#multiCollapseExample1" role="button"
+        aria-expanded="false" aria-controls="multiCollapseExample1">What is this page about?</a>
+    <div class="row">
+        <div class="col">
+            <div class="collapse multi-collapse" id="multiCollapseExample1">
+                <br>
+                <p1>
+                    This is a special page of this app. This page will be populated with data only once a week.
+                    Insights mean deeper meaning of something. With this page, I have tried to accomplished a system
+                    that will
+                    analyze how you are creating and completing your tasks and then process them and show you a
+                    beautiful representation of
+                    that data on this page.
+                    <br><br>
+                    So basically if you are a new user, this page will take about 7 days to learn about you and to
+                    collect enough data.
+                    Since a week begins on a Monday, this page will be updated every Monday. After visiting this page on
+                    a Monday, the
+                    contents of this page will not change until the next Monday, but during this period the system will
+                    again collect
+                    data about your behavior and process it so that it can present them to you next Monday.
+                    <br><br>
+                    <p><b>So what is it really that you will be seeing here?</b></p>
+                    Every user will be provided with <a style="color: cornflowerblue">three</a> sorts of insights for
+                    now.
+                    <br>
+                    Well, any user, regardless of if they have created any tasks this week or not, will be provided with
+                    a basic
+                    insight that is that they will be able to see how many tasks they have created and completed since
+                    the day they joined
+                    the app
+                    <br>
+                    Secondly, if the person was productive and created and completed many tasks since the last Monday,
+                    then they will also see
+                    how many tasks they have created and how many they have actually completed among those.
+                    <br>
+                    Also, if some of the tasks that you created this week had any due dates, and you completed those
+                    tasks within
+                    the due date (congrats btw) then you will also see how many tasks you have completed this week ON
+                    TIME!
+                    <br><br>
+                    <b>But what if I created my account on a day that was not a Monday?</b>
+                    <br>
+                    Well this can happen. If a user created their account on a Monday, then it's just miraculously
+                    perfect, they
+                    will manage their tasks all week and the system will take 7 days to process data and their Insights
+                    Page will
+                    be available next Monday. But if someone created their account on a day that was not a Monday, then
+                    a special request
+                    will be made and the Insights will be generated instantly after 7 days from the creation date though
+                    with LESS data.
+                    What I mean is, if someone created their account on a Wednesday, then on the next Wednesday they
+                    will see Insights about
+                    their behavior till the previous Monday. Let's say 13th is a Wednesday and someone created their
+                    account and 20th is the next Wednesday. So on 20th, the user
+                    will see data that they created FROM 11th (a Monday, yes your todos for those two days will be zero)
+                    UPTO 18th
+                    which is a Monday. So actually the tasks created since 13th UPTO 18th will be analyzed and generated
+                    on 20th.
+                    Keep in mind 20th is not a Monday but still the data is being generated, that's why this is a
+                    special request.
+                    So 20th is a Wednesday, what now? Now, on the next Monday which is 25th, the user will get new
+                    generated data as usual. This time
+                    they will see data FROM 18th UPTO 25th. Hope you get the idea. If you don't, dont fuss about it.
+                    Keep doing what you are doing
+                    and visit this page every Monday if possible and you shall see some interesting numbers.
+                    <br>
+                    This is the last feature that I will be developing for this app. Thanks everyone who uses the app.
+                </p1>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% elif ready == "show content" %}
+
+<div class="full-content">
+    <div>
+        <center>
+            <h1 style="font-size:8ch; color:orange; font-family:Consolas">{{ week_range }}</h1>
+        </center>
+    </div>
+    <br><br><br>
+    <div class="content-section dark-mode-assist-section">
+        <center>
+            <h1>
+                Since the day you became a user of this app, you created:
+                <br>
+                <b id="total" class="important-num-major">
+                    {{ user_total_todos }}
+                </b>
+                todos
+            </h1>
+            <h1>
+                And you completed:
+                <span id="js-caller" class="important-num-minor">
+                    <script>subtract({{ user_total_todos }}, {{ user_active_todos }}, "js-caller")</script>
+                </span>
+                of them! Wow!
+            </h1>
+        </center>
+        <small style="color: green;">Tip: This insight will update every time you complete or create tasks</small>
+        <br>
+        <small style="color: red;">Tip: If you are inactivate in using the app, your data on this page may be affected
+            in a bad way
+        </small>
+    </div>
+
+    {% if todos_created_this_week != 0 %}
+        <div class="content-section dark-mode-assist-section">
+            <center>
+                <h1>
+                    This week you created:
+                    <br>
+                    <b id="id-1" class="important-num-major">
+                        {{ todos_created_this_week }}
+                    </b>
+                    todos
+                </h1>
+                <h1>
+                    And you completed:
+                    <b id="id-2" class="important-num-minor">
+                        {{ todos_completed_this_week }}
+                    </b>
+                    of them!!
+                </h1>
+                <br>
+                <h3>
+                    By analyzing you, the AI has said that you were about
+                    <br>
+                    <b id="efficiency" class="important-num-major">
+                        {{ efficiency_this_week }}%
+                    </b>
+                    <br>
+                    efficient this week
+                </h3>
+                <br>
+                {% if efficiency_change != 0 %}
+                    {% if efficiency_change_type == "Positive" %}
+                        <h3>
+                            Congrats! You were more efficient this week than last week. Up by {{ efficiency_change }}%
+                        </h3>
+
+                    {% elif efficiency_change_type == "Negative" %}
+                        <h3>
+                            Dang! Last week was more efficient than this week. Try harder! Down by {{ efficiency_change }}%
+                        </h3>
+
+                    {% elif efficiency_change_type == "Same" %}
+                        <h3>
+                            You were as efficient this week as you were last week. Keep it up!
+                        </h3>
+                    {% endif %}
+                {% endif %}
+            </center>
+        </div>
+    {% endif %}
+
+    {% if img_exists %}
+        <center>
+            <h2>Let's visualize how many tasks you completed over the week</h2>
+            <img style="width: 100%;" src="../../../media/users/{{ request.user }}_{{ request.user.pk }}/insights_graphs/graph_this_week.png">
+        </center>
+    {% endif %}
+
+    <br>
+    {% if todos_on_time != 0 %}
+        <div class="content-section dark-mode-assist-section">
+            <center>
+                <h1>
+                    This week you completed
+                    <br>
+                    <b id='id-3' class="important-num-major">
+                        {{ todos_on_time }}
+                    </b>
+                    <br>
+                    todos just on time! Yay!
+                </h1>
+            </center>
+        </div>
+    {% endif %}
+
+    {% if completed_created_long_ago != 0 %}
+        <div class="content-section dark-mode-assist-section">
+            <center>
+                <h1>
+                    This week you completed
+                    <br>
+                    <b id="id-4" class="important-num-major">
+                        {{ completed_created_long_ago }}
+                    </b>
+                    <br>
+                    todos that you created long before but couldn't find time to complete but this week you did! Awesome!!
+                </h1>
+            </center>
+        </div>
+    {% endif %}
+
+    {% if todos_after_due_date != 0 %}
+        <div class="content-section dark-mode-assist-section">
+            <center>
+                <h1>
+                    This week you completed
+                    <br>
+                    <b style="color:orangered" id="id-5" class="important-num-major">
+                        {{ todos_after_due_date }}
+                    </b>
+                    <br>
+                    todos after its due date!
+                </h1>
+            </center>
+        </div>
+    {% endif %}
+
+    {% if missed_todos != 0 %}
+        <div class="content-section dark-mode-assist-section">
+            <center>
+                <h1>
+                    This week you missed
+                    <br>
+                    <b style="color:red" id="id-6" class="important-num-major">
+                        {{ missed_todos }}
+                    </b>
+                    <br>
+                    todos. Oh no!!
+                </h1>
+            </center>
+        </div>
+    {% endif %}
+
+    {% if important_todos_completed != 0 %}
+        <div class="content-section dark-mode-assist-section">
+            <center>
+                <h1>
+                    This week you accomplished
+                    <br>
+                    <b style="color:yellow" id="id-7" class="important-num-major">
+                        {{ important_todos_completed }}
+                    </b>
+                    <br>
+                    tasks that were important to you! Hope hard work paid off!
+                </h1>
+            </center>
+        </div>
+    {% endif %}
+
+    <br>
+    <a class="btn btn-outline-success" style="float:right" href="https://github.com/Luciekinyanjui/M.V.C" target="_blank">How are my stats calculated?</a>
+    <br><br>
+
+    <br>
+    {% if todos_created_this_week == 0 or todos_on_time == 0 or completed_created_long_ago == 0 or important_todos_completed == 0 or missed_todos == 0 or todos_after_due_date == 0 %}
+        <p1 class="dark-mode-assist">
+            Awesome stats! Be as or more productive the upcoming week and we may give you more data
+            <br>
+        </p1>
+    {% endif %}
+    <br><br><br>
+</div>
+
+{% endif %}
+
+{% endblock content %}

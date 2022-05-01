@@ -1,0 +1,391 @@
+{% extends "ToDo/base.html" %}
+{% block content %}
+{% load crispy_forms_tags %}
+{% load filename %}
+{% load tz %}
+
+<div class="content-section dark-mode-assist-section">
+    <h1 style="text-align: center; margin-left: 33px;">
+        {% if not todo.is_checked %}
+            <a id="todo-title-{{ todo.pk }}" style="color:lightskyblue; text-decoration: none;" href="{% url 'todo-edit' todo.pk %}"> 
+                {{ todo.title }}
+            </a>
+            {% if request.user_agent.is_mobile %}
+                <br>
+            {% endif %}
+            <button id="todo-btn-{{ todo.pk }}" style="float:left; margin-top: 13px;" onclick="toggleTodo('{{ todo.pk }}', 'check', 'detail-view')"
+                class="btn btn-outline-success">
+                <i class="fa fa-check"></i>
+            </button>
+        {% else %}
+            <a id="todo-title-{{ todo.pk }}" style="color:lightskyblue; text-decoration: none;" href="{% url 'todo-edit' todo.pk %}">
+                <s>{{ todo.title }}</s> 
+            </a>
+            {% if request.user_agent.is_mobile %}
+                <br>
+            {% endif %}
+            <button id="todo-btn-{{ todo.pk }}" style="float:left; margin-top: 13px;" onclick="toggleTodo('{{ todo.pk }}', 'uncheck', 'detail-view')"
+                class="btn btn-success">
+                <i class="fa fa-check"></i>
+            </button>
+        {% endif %}
+
+        {% if todo.important %}
+            <button id="todo-important-{{ todo.pk }}" onclick="toggleImportant({{ todo.pk }}, 'unmark')"
+                style="float: right; margin-top:13px; margin-right: 3px;" class="btn btn-warning">
+                <i class="fas fa-star"></i>
+            </button>
+        {% else %}
+            <button id="todo-important-{{ todo.pk }}" onclick="toggleImportant({{ todo.pk }}, 'unmark')"
+                style="float: right; margin-top:13px; margin-right: 3px;" class="btn btn-warning">
+                <i class="fas fa-star"></i>
+            </button>
+        {% endif %}
+
+        <br>
+        {% if todo.parent_list %}
+            <a style="font-size: 50px; color:lightcoral; text-decoration: none;" href="{% url 'tasklist-single-view' todo.parent_list.title todo.parent_list.pk %}">
+                ({{ todo.parent_list.title }})
+            </a>
+        {% endif %}  
+    </h1>
+
+    <small>Created on: {{ todo.date_created|timezone:request.user.profile.timezone|date:"F d" }}</small>
+
+    <br>
+    {% if todo.is_checked %}
+        <small id="completed-small-text">Completed on: {{ todo.date_completed|timezone:request.user.profile.timezone|date:"F d" }}</small>
+    {% endif %}
+    <small id="completed-small-text-hidden"></small>
+
+    <br>
+
+    {% if todo.due_date != None %}
+        <p id="due-date-content-{{ todo.pk }}" style="font-size: 25px; color: {{ todo.due_date_color }}">
+            Due on: {{ todo.due_date|timezone:request.user.profile.timezone|date:"F d" }} 
+            <button onclick="deleteItem('due_date', {{ todo.pk }})" class="btn btn-outline-danger">
+                <i class="fa fa-trash">
+                </i>
+            </button>
+        </p>
+    {% else %}
+        <div id="due-date-input-{{ todo.pk }}">
+            <a class="btn btn-outline-primary" data-toggle="collapse" href="#multiCollapseExample{{ todo.pk }}" role="button"
+                aria-expanded="false" aria-controls="multiCollapseExample{{ todo.pk }}">
+                Due Date 
+                <i class="far fa-clock"></i>
+            </a>
+            <div class="row">
+                <div class="col">
+                    <div class="collapse multi-collapse" id="multiCollapseExample{{ todo.pk }}">
+                        <br>
+                        <div class="card card-body dark-mode-assist-section">
+                            <div class="content section">
+                                <form action="/createDueDate/" id="due-date-add-form" method="POST" name={{ todo.pk }}>
+                                    {% csrf_token %}
+                                    <fieldset class="form-group dark-mode-assist">
+                                        <legend class="border-bottom mb-4">Due in (days)</legend>
+                                        {{ due_form|crispy }}
+                                        <input type="hidden" name="title" value={{ todo.pk }}>
+                                        <p id="hidden-parent-task-pk" style="display: none;">{{ todo.pk }}</p>
+                                    </fieldset>
+                                    <div class="form-group">
+                                        <button class="btn btn-outline-info" type="submit">Add</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+    {% endif %}
+
+    <p id="due-date-content-{{ todo.pk }}" style="display: none; font-size: 25px; color: {{ todo.due_date_color }};">
+    </p>
+
+    <div style="display: none;" id="due-date-input-{{ todo.pk }}">
+        <a class="btn btn-outline-primary" data-toggle="collapse" href="#multiCollapseExample{{ todo.pk }}-hidden" role="button"
+            aria-expanded="false" aria-controls="multiCollapseExample{{ todo.pk }}-hidden">
+            Due Date 
+            <i class="far fa-clock"></i>
+        </a>
+        <div class="row">
+            <div class="col">
+                <div class="collapse multi-collapse" id="multiCollapseExample{{ todo.pk }}-hidden">
+                    <br>
+                    <div class="card card-body dark-mode-assist-section">
+                        <div class="content section">
+                            <form action="/createDueDate/" id="due-date-add-form" method="POST" name={{ todo.pk }}>
+                                {% csrf_token %}
+                                <fieldset class="form-group dark-mode-assist">
+                                    <legend class="border-bottom mb-4">Due in (days)</legend>
+                                    {{ due_form|crispy }}
+                                    <input type="hidden" name="title" value={{ todo.pk }}>
+                                    <p id="hidden-parent-task-pk" style="display: none;">{{ todo.pk }}</p>
+                                </fieldset>
+                                <div class="form-group">
+                                    <button class="btn btn-outline-info" type="submit">Add</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if subtasks %}
+        <br><br>
+        <center id="subtask-heading" style="font-size:27px; background-color: burlywood; color: 'black';">Subtasks for this task:</center>
+        <br>
+        <ul id="subtask-list" style="padding-bottom: 22px;">
+            {% for subtask in subtasks %}
+                {% if not subtask.done %}
+                    <li class="content-section hoverable-item" id="subtask-items-{{ subtask.pk }}" style="font-size: 23px">
+                        <button id="subtask-btn-{{ subtask.pk }}" onclick="toggleSubtask({{ subtask.pk }}, 'check')"
+                            class="btn btn-outline-success">
+                            <i class="fa fa-check"></i>
+                        </button>
+                        <a id="subtask-title-{{ subtask.pk }}" style="color:inherit; text-decoration: none;" href="{% url 'todo-edit-subtask' subtask.pk %}">
+                            {{ subtask.title }} 
+                        </a>
+                        {% if request.user_agent.is_mobile %}
+                            <button onclick="deleteItem('subtask', {{ subtask.pk }})" type="submit" 
+                                style="text-align: right;" class="btn btn-outline-danger"><i class="fas fa-trash"></i>
+                            </button>
+                        {% else %}
+                            <button onclick="deleteItem('subtask', {{ subtask.pk }})" type="submit" 
+                                style="float: right;" class="btn btn-outline-danger"><i class="fas fa-trash"></i>
+                            </button>
+                        {% endif %}
+                    </li>
+                {% else %}
+                    <li class="content-section hoverable-item" id="subtask-items-{{ subtask.pk }}" style="font-size: 23px">
+                        <button id="subtask-btn-{{ subtask.pk }}" onclick="toggleSubtask({{ subtask.pk }}, 'uncheck')"
+                            class="btn btn-success">
+                            <i class="fa fa-check"></i>
+                        </button>
+                        <a id="subtask-title-{{ subtask.pk }}" style="color:inherit; text-decoration: line-through;"
+                            href="{% url 'todo-edit-subtask' subtask.pk %}"> 
+                            {{ subtask.title }} 
+                        </a>
+                        {% if request.user_agent.is_mobile %}
+                            <button onclick="deleteItem('subtask', {{ subtask.pk }})" type="submit" 
+                                style="text-align: right;" class="btn btn-outline-danger"><i class="fas fa-trash"></i>
+                            </button>
+                        {% else %}
+                            <button onclick="deleteItem('subtask', {{ subtask.pk }})" type="submit" 
+                                style="float: right;" class="btn btn-outline-danger"><i class="fas fa-trash"></i>
+                            </button>
+                        {% endif %}
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+
+        {% if percentage != 0 %}
+            <center id="progress" style="font-size:23px; background-color: burlywood; color: 'black';">Your progress:</center>
+            <center> <span id="percentage" style="font-size:10ch; color:lightseagreen">{{ percentage }}%</span></center>
+        {% else %}
+            <center id="progress" style="font-size:23px; background-color: burlywood; color: 'black'; display: none">Your progress:</center>
+            <center> <span id="percentage" style="font-size:10ch; color:lightseagreen"></span></center>
+        {% endif %}
+
+    {% else %}
+        <center id="subtask-heading" style="font-size:27px; background-color: burlywood; color: 'black';"></center>
+
+        <br>
+        <ul style="display: none; padding-bottom:22px" id="subtask-list">
+        </ul>
+
+        <center id="progress" style="font-size:23px; background-color: burlywood; color: 'black'; display: none">Your progress:</center>
+        <center> <span id="percentage" style="font-size:10ch; color:lightseagreen"></span></center>
+    {% endif %}
+
+    <a class="btn btn-outline-primary" data-toggle="collapse" href="#multiCollapseExample" role="button"
+        aria-expanded="false" aria-controls="multiCollapseExample">
+        Add subtask
+    </a>
+    <div class="row">
+        <div class="col">
+            <div class="collapse multi-collapse" id="multiCollapseExample">
+                <br>
+                <div class="card card-body dark-mode-assist-section">
+                    <div class="content section">
+                        <form id="subtask-add-form" action="/createSubtask/" method="POST" name={{ todo.title }}>
+                            {% csrf_token %}
+                            <fieldset class="form-group dark-mode-assist">
+                                <legend class="border-bottom mb-4">New subtask</legend>
+                                {{ subtask_form|crispy }}
+                                <p id="hidden-parent-task-pk" style="display: none">{{ todo.pk }}</p>
+                            </fieldset>
+                            <div class="form-group">
+                                <button class="btn btn-outline-info" type="submit">Add</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br><br>
+
+    {% if todo.has_notes %}
+        <div id="notes">
+            <br>
+            <center style="font-size:27px; background-color: burlywood; color: 'black';">Notes for this task:</center>
+            <h3 id="notes-content">
+                <br>
+                <div style="font-family:Candara">{{ note.content|linebreaks }}</div>
+                <button style="font-size: 2ch" class="btn btn-outline-danger" type="submit"
+                    onclick="deleteItem('notes', {{ note.pk }})"><i class="fas fa-trash"></i></button>
+                <button style="font-size: 2ch;" class="btn btn-outline-info" type="submit"
+                    onclick="location.href='{% url 'todo-edit-notes' note.pk %}'"><i class="fas fa-pencil-alt"></i></button>
+            </h3>
+            <p id="notes-metadata">
+                <br>
+                Notes added on: <b>{{ note.date_added|timezone:request.user.profile.timezone|date:"F d, Y" }}</b>
+                <br>
+
+                {% if note.date_edited != note.date_added %}
+                    Notes edited on: <b>{{ note.date_edited|timezone:request.user.profile.timezone|date:"F d, Y" }}</b>
+                {% endif %}
+            </p>
+        </div>
+
+    {% else %}
+        <div id="notes-input">
+            <br>
+            <form action="/createNote/" id="notes-add-form" method="POST" name={{ note.pk }}>
+                {% csrf_token %}
+                <fieldset class="form-group dark-mode-assist">
+                    <legend class="border-bottom mb-4">Add notes</legend>
+                    {{ note_form|crispy }}
+                    <input type="hidden" name="title" value={{ note.pk }}>
+                    <p id="hidden-parent-task-pk" style="display:none">{{ todo.pk }}</p> 
+                </fieldset>
+                <div class="form-group">
+                    <button class="btn btn-outline-info" type="submit">Add</button>
+                </div>
+            </form>
+        </div>
+    {% endif %}
+
+    <div id="notes-input" style="display: none;">
+        <br>
+        <form action="/createNote/" id="notes-add-form" method="POST" name={{ note.pk }}>
+            {% csrf_token %}
+            <fieldset class="form-group dark-mode-assist">
+                <legend class="border-bottom mb-4">Add notes</legend>
+                {{ note_form|crispy }}
+                <input type="hidden" name="title" value={{ note.pk }}>
+                <p id="hidden-parent-task-pk" style="display:none">{{ todo.pk }}</p>
+                <p id="hidden-note-pk" style="display: none">{{ note.pk }}</p>
+            </fieldset>
+            <div class="form-group">
+                <button class="btn btn-outline-info" type="submit">Add</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="notes" style="display: none;">
+        <br>
+        <center style="font-size:27px; background-color: burlywood; color: 'black';">Notes for this task:</center>
+        <br>
+        <h3 id="notes-content">
+        <br>
+        </h3>
+        <br>
+        <p id="notes-metadata">
+        </p>
+    </div>
+    <br><br><br>
+
+    <center style="font-size: 27px; background-color: burlywood; color: 'black';">Attachments</center>
+    <br>
+
+    {% if attachments %}
+    <div id="attachments-section" class="table-responsive dark-mode-assist-section">          
+        <table class="table dark-mode-assist-section">
+            <thead>
+                <tr>
+                    <th>File</th>
+                    <th>Uploaded on</th>
+                    <th>View/Download</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attachment in attachments %}
+                    <tr class="hoverable-item dark-mode-assist-section" id="attachment-{{ attachment.pk }}">
+                        <td>{{ attachment.content|getfilename }}</td>
+                        <td>{{ attachment.uploaded_on|timezone:request.user.profile.timezone|date:"F d"}}</td>
+                        <td><a class="btn btn-outline-success" href="{{ attachment.content.url }}">Click me <i class="fas fa-download"></i></a></td>
+                        <td>
+                            <button style="font-size: 2.5ch;" data-toggle="modal" data-target="#exampleModalCenter{{ attachment.pk }}" class="btn btn-outline-danger">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <div class="modal fade" id="exampleModalCenter{{ attachment.pk }}" tabindex="-1" role="dialog"
+                    aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content dark-mode-assist-section">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLongTitle">Confirm the deletion</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to delete this attachment?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button data-dismiss="modal" onclick="deleteItem('attachment', {{ attachment.pk }})" type="submit"
+                                        class="btn btn-danger">Yes, I am sure</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <a class="btn btn-outline-info" data-toggle="collapse" href="#multiCollapseExample-attachments" role="button"
+        aria-expanded="false" aria-controls="multiCollapseExample">
+        Upload attachments
+    </a>
+    <div class="row">
+        <div class="col">
+            <div class="collapse multi-collapse" id="multiCollapseExample-attachments">
+                <br>
+                <div class="card card-body dark-mode-assist-section">
+                    <div class="content section">
+                        <form method="POST" name="attachment-{{ todo.pk }}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <fieldset class="form-group dark-mode-assist">
+                                <legend class="border-bottom mb-4">Add documents</legend>
+                                {{ attachment_form|crispy }}
+                                <input type="hidden" name="title" value={{ todo.pk }}>
+                                <p id="hidden-parent-task-pk" style="display:none">{{ todo.pk }}</p>
+                            </fieldset>
+                            <div class="form-group">
+                                <button class="btn btn-outline-info btn-lg" type="submit">Upload <i class="fas fa-upload"></i></button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+<br><br><br>
+
+{% endblock content %}
