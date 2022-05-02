@@ -43,10 +43,6 @@ My to-do list app uses these amazing reusable and awesome apps/dependencies to p
 * [django-timezone-field](https://github.com/mfogel/django-timezone-field)
 * [django-cleanup](https://github.com/un1t/django-cleanup)
 * [Pillow](https://github.com/python-pillow/Pillow)
-* [Matplotlib](https://github.com/matplotlib/matplotlib)
-* [Seaborn](https://github.com/mwaskom/seaborn)
-* [Numpy](https://github.com/numpy/numpy) *Required by Matplotlib*
-* [Pandas](https://github.com/pandas-dev/pandas) *Required by Seaborn*
 * [Awesome code snippet that handles AJAX Post form submissions](https://github.com/realpython/django-form-fun/blob/master/part1/main.js)
 
 On the front end, the app uses these technologies
