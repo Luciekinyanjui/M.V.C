@@ -25,7 +25,6 @@ Lucy Kinyanjui.
   * Attachments
 * Powerful Search feature to look for anything.
 * Smart Pages like "Important", "Next Up" and "Your Files".
-* App has a feature called Insights, which is really powerful and every week gives the user a report of how productive they were. It also uses Matplotlib to plot graphs to show the user. Neat! [Read more about it](https://github.com/arafat-ar13/Regular-ToDoList/wiki/Insights-Page)
 * The app has Dark Mode which looks stunning!
 * Bootstrap CSS has been used to make the app look and feel Premium and Beautiful.
 * The app has AJAX support baked in so that almost all the operations in the app is now Asynchronous, no reloads ever!
